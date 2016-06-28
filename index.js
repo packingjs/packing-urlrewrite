@@ -21,8 +21,8 @@ function dispatcher(req, res, next) {
         res.setHeader('Content-Type', 'application/json');
         requireUncached(realpath)(req, res);
       }
+      return true;
     }
-    return true;
   };
 };
 
@@ -36,8 +36,7 @@ function rewrite(rewriteTable) {
     });
   });
   return function(req, res, next) {
-    // console.log(rules);
-    if (!rules.length || !rules.some(dispatcher(req, res, next))) {
+    if (rules.length === 0 || !rules.some(dispatcher(req, res, next))) {
       next();
     }
   };
