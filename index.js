@@ -32,7 +32,7 @@ function dispatcher(req, res, next) {
       } else {
         // 使用同域名的其他API模拟数据
         var toUrl = req.url.replace(rule.from, rule.to);
-        console.log(toUrl);
+        // console.log(toUrl);
         req.url = toUrl;
         next();
       }
