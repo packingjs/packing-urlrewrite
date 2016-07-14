@@ -1,6 +1,6 @@
 {
   "name": "packing-urlrewrite",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/zhongzhi107/packing-urlrewrite/issues"
   },
-  "homepage": "https://github.com/zhongzhi107/packing-urlrewrite#readme"
+  "homepage": "https://github.com/zhongzhi107/packing-urlrewrite#readme",
+  "dependencies": {
+    "http-proxy": "^1.14.0"
+  }
 }
