@@ -25,14 +25,17 @@ function dispatcher(req, res, next) {
         requireUncached(realpath)(req, res);
       } else if (rule.to.indexOf('http://') === 0) {
         // 使用跨域API模拟数据
+        var toUrl = req.url.replace(rule.from, rule.to);
+        var targetUrl = url.parse(toUrl);
+
+        req.url = toUrl;
         proxy.web(req, res, {
-          target: rule.to,
+          target: targetUrl.protocol + targetUrl.host,
           changeOrigin: true
         });
       } else {
         // 使用同域名的其他API模拟数据
         var toUrl = req.url.replace(rule.from, rule.to);
-        // console.log(toUrl);
         req.url = toUrl;
         next();
       }
