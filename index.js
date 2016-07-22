@@ -27,11 +27,14 @@ function dispatcher(req, res, next) {
         // 使用跨域API模拟数据
         var toUrl = req.url.replace(rule.from, rule.to);
         var targetUrl = url.parse(toUrl);
-
         req.url = toUrl;
         proxy.web(req, res, {
-          target: targetUrl.protocol + targetUrl.host,
+          target: targetUrl.protocol + '//' + targetUrl.host,
           changeOrigin: true
+        }, function (e) {
+          // 连接服务器错误
+          res.writeHead(502, { 'Content-Type': 'text/html' });
+          res.end(e.toString());
         });
       } else {
         // 使用同域名的其他API模拟数据
