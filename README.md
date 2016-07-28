@@ -1,8 +1,8 @@
 # packing-urlrewrite
 
-[![NPM](https://nodei.co/npm/packing-urlrewrite.png)](https://nodei.co/npm/packing-urlrewrite/)
-
 >一个用来做代理和转发URL的express中间件
+
+[![NPM](https://nodei.co/npm/packing-urlrewrite.png)](https://nodei.co/npm/packing-urlrewrite/)
 
 ## 安装
 ```
@@ -30,7 +30,7 @@ app.use(urlrewrite(rules));
 ```javascript
 // /mock/api/$1.js
 export default (req, res) => {
-  // maybe get parameters from request 
+  // maybe get parameters from request
   const data = {
     name: 'Joe'
   };
