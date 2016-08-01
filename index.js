@@ -12,8 +12,7 @@ function requireUncached(module){
 
 function dispatcher(req, res, next) {
   return function (rule) {
-    // console.log('req.url: ', req.url);
-    if (rule.from.test(req.url)) {
+    if (rule.from.test(req.path)) {
       if (rule.to.indexOf('require!') === 0) {
         // 使用本地文件模拟数据
         var urlObject = url.parse(req.url);
@@ -38,7 +37,7 @@ function dispatcher(req, res, next) {
         });
       } else {
         // 使用同域名的其他API模拟数据
-        var toUrl = req.url.replace(rule.from, rule.to);
+        var toUrl = req.url.replace(req.path, rule.to);
         req.url = toUrl;
         next();
       }
