@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zhongzhi107/packing-urlrewrite.git"
+    "url": "git+https://github.com/packingjs/packing-urlrewrite.git"
   },
   "keywords": [
     "rewrite",
@@ -18,9 +18,9 @@
   "author": "zhongzhi <zhong.zhi@163.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/zhongzhi107/packing-urlrewrite/issues"
+    "url": "https://github.com/packingjs/packing-urlrewrite/issues"
   },
-  "homepage": "https://github.com/zhongzhi107/packing-urlrewrite#readme",
+  "homepage": "https://github.com/packingjs/packing-urlrewrite#readme",
   "dependencies": {
     "http-proxy": "^1.14.0"
   }
