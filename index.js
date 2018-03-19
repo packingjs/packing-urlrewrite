@@ -22,7 +22,7 @@ function dispatcher(req, res, next) {
         var realpath = path.join(process.cwd(), filepath);
         res.setHeader('Content-Type', 'application/json');
         requireUncached(realpath)(req, res);
-      } else if (rule.to.indexOf('http://') === 0) {
+      } else if (/^(https{0,1}:){0,1}\/\//.test(rule.to)) {
         // 使用跨域API模拟数据
         var toUrl = req.url.replace(rule.from, rule.to);
         var targetUrl = url.parse(toUrl);
