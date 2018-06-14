@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "release": "standard-version && npm publish",
-    "postrelease": "git push && git push origin --tags"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -23,6 +22,7 @@
   },
   "homepage": "https://github.com/packingjs/packing-urlrewrite#readme",
   "dependencies": {
-    "http-proxy": "^1.14.0"
+    "http-proxy": "^1.14.0",
+    "strip-json-comments": "^2.0.1"
   }
 }
