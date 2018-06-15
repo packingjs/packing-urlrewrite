@@ -22,7 +22,6 @@
   },
   "homepage": "https://github.com/packingjs/packing-urlrewrite#readme",
   "dependencies": {
-    "http-proxy": "^1.14.0",
-    "strip-json-comments": "^2.0.1"
+    "http-proxy": "^1.14.0"
   }
 }

@@ -3,7 +3,6 @@
 var url = require('url');
 var path = require('path');
 var fs = require('fs');
-var stripJsonComments = require('strip-json-comments');
 var httpProxy = require('http-proxy');
 var proxy = httpProxy.createProxyServer({});
 
@@ -33,7 +32,7 @@ function dispatcher(req, res, next) {
           target: targetUrl.protocol + '//' + targetUrl.host,
           changeOrigin: true
         }, function (e) {
-           // 连接服务器错误
+          // 连接服务器错误
           res.writeHead(502, { 'Content-Type': 'text/html' });
           res.end(e.toString());
         });
@@ -57,27 +56,18 @@ function convertRules(data) {
   });
 }
 
-function loadRules(path) {
-  var data = fs.readFileSync(path, 'utf-8')
-  data = JSON.parse(stripJsonComments(data));
-  return convertRules(data);
-}
-
 function rewrite(rewriteTable) {
   var rules = [];
   var rulesHotFile = rewriteTable.rulesHotFile;
   if (rulesHotFile) {
-    rules = loadRules(rulesHotFile);
+    rules = convertRules(requireUncached(rulesHotFile));
     fs.watchFile(rulesHotFile, function (curr, prev) {
       console.log('rewriteRules changed.');
-      clearTimeout(st);
-      var st = setTimeout(function() {
-        if (curr.mtime > prev.mtime) {
-          console.log('reload rewriteRules...');
-          rules = loadRules(rulesHotFile);
-          console.log('reload rewriteRules success.');
-        }
-      }, 500);
+      if (curr.mtime > prev.mtime) {
+        console.log('reload rewriteRules...');
+        rules = convertRules(requireUncached(rulesHotFile));
+        console.log('reload rewriteRules success.');
+      }
     })
   } else {
     rules = convertRules(rewriteTable);
