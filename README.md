@@ -11,7 +11,7 @@ npm install packing-urlrewrite --save-dev
 
 ## 使用
 
-### 使用静态配置(静态和热发配置二选一)
+### 使用静态配置(静态和热加载配置二选一)
 
 ```javascript
 import Express from 'express';
@@ -23,7 +23,7 @@ const rules = {
   // 2.同域转发
   '^/$': '/index.html',
   // 3.跨域转发
-  '^/test/(.*)': 'http://test.xxx.com/test/$1',
+  '^/test/(.*)': 'http://test.xxx.com/test/$1'
 };
 const app = new Express();
 app.use(urlrewrite(rules));
@@ -42,7 +42,7 @@ export default (req, res) => {
 };
 ```
 
-### 使用热发配置
+### 使用热加载配置
 
 ```javascript
 import Express from 'express';
@@ -50,21 +50,21 @@ import urlrewrite from 'packing-urlrewrite';
 
 const rules = {
   // 用热发配置rulesHotFile
-  rulesHotFile: __dirname + '/rewriteRules.cfg'
+  rulesHotFile: __dirname + '/rewriteRules.js'
 };
 const app = new Express();
 app.use(urlrewrite(rules));
 ```
 
 ```javascript
-// rewriteRules.cfg 文件内容必须符合JSON格式，但可以加注释
-{
+// rewriteRules.js
+module.exports = {
   // 1.用json模拟数据，标示符为 `require!`
-  "^/api/(.*)": "require!/mock/api/$1.js",
+  '^/api/(.*)': 'require!/mock/api/$1.js',
   // 2.同域转发
-  "^/$": "/index.html",
+  '^/$': '/index.html',
   // 3.跨域转发
-  "^/test/(.*)": "http://test.xxx.com/test/$1",
+  '^/test/(.*)': 'http://test.xxx.com/test/$1'
 }
 ```
 
