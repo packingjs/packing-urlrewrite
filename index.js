@@ -63,12 +63,10 @@ function rewrite(rewriteTable) {
     rules = convertRules(requireUncached(rulesHotFile));
     fs.watchFile(rulesHotFile, function (curr, prev) {
       console.log('rewriteRules changed.');
-      if (curr.mtime > prev.mtime) {
-        console.log('reload rewriteRules...');
-        rules = convertRules(requireUncached(rulesHotFile));
-        console.log('reload rewriteRules success.');
-      }
-    })
+      console.log('reload rewriteRules...');
+      rules = convertRules(requireUncached(rulesHotFile));
+      console.log('reload rewriteRules success.');
+    });
   } else {
     rules = convertRules(rewriteTable);
   }
