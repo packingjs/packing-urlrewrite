@@ -11,7 +11,7 @@ function requireUncached(module){
   return require(module);
 }
 
-function dispatcher(req, res, next) {
+function dispatcher(req, res, next, options) {
   return function (rule) {
     if (rule.from.test(req.path)) {
       if (rule.to.indexOf('require!') === 0) {
@@ -21,11 +21,17 @@ function dispatcher(req, res, next) {
           .replace(rule.from, rule.to)
           .replace('require!', '');
         var realpath = path.join(process.cwd(), filepath);
+        if (options.debug) {
+          console.log('[urlrewrite] ' + req.url + ' -> ' + realpath);
+        }
         res.setHeader('Content-Type', 'application/json');
         requireUncached(realpath)(req, res);
       } else if (/^(https{0,1}:){0,1}\/\//.test(rule.to)) {
         // 使用跨域API模拟数据
         var toUrl = req.url.replace(rule.from, rule.to);
+        if (options.debug) {
+          console.log('[urlrewrite] ' + req.url + ' -> ' + toUrl);
+        }
         var targetUrl = url.parse(toUrl);
         req.url = toUrl;
         proxy.web(req, res, {
@@ -40,6 +46,9 @@ function dispatcher(req, res, next) {
         // 使用同域名的其他API模拟数据
         var toUrl = req.url.replace(req.path, rule.to);
         req.url = toUrl;
+        if (options.debug) {
+          console.log('[urlrewrite] ' + req.url + ' -> ' + toUrl);
+        }
         next();
       }
       return true;
@@ -56,22 +65,30 @@ function convertRules(data) {
   });
 }
 
-function rewrite(rewriteTable) {
+function rewrite(rewriteTable, options) {
   var rules = [];
   var rulesHotFile = rewriteTable.rulesHotFile;
+  options = options || {
+    debug: false
+  };
+
   if (rulesHotFile) {
     rules = convertRules(requireUncached(rulesHotFile));
     fs.watchFile(rulesHotFile, function (curr, prev) {
-      console.log('rewriteRules changed.');
-      console.log('reload rewriteRules...');
+      if (options.debug) {
+        console.log('rewriteRules changed.');
+        console.log('reload rewriteRules...');
+      }
       rules = convertRules(requireUncached(rulesHotFile));
-      console.log('reload rewriteRules success.');
+      if (options.debug) {
+        console.log('reload rewriteRules success.');
+      }
     });
   } else {
     rules = convertRules(rewriteTable);
   }
   return function(req, res, next) {
-    if (rules.length === 0 || !rules.some(dispatcher(req, res, next))) {
+    if (rules.length === 0 || !rules.some(dispatcher(req, res, next, options))) {
       next();
     }
   };

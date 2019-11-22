@@ -26,6 +26,7 @@ const rules = {
   '^/test/(.*)': 'http://test.xxx.com/test/$1'
 };
 const app = new Express();
+const options = { debug: true };
 app.use(urlrewrite(rules));
 ```
 
@@ -67,5 +68,5 @@ module.exports = {
   '^/test/(.*)': 'http://test.xxx.com/test/$1'
 }
 ```
-
-
+## 参数
+`debug` - {boolean} 是否输出转发信息，默认值：`false`
