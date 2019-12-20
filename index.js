@@ -1,97 +1,59 @@
-'use strict';
-
-var url = require('url');
-var path = require('path');
 var fs = require('fs');
+var path = require('path');
 var httpProxy = require('http-proxy');
-var proxy = httpProxy.createProxyServer({});
 
-function requireUncached(module){
-  delete require.cache[require.resolve(module)];
-  return require(module);
-}
+var proxy = httpProxy.createProxyServer();
+proxy.on('error', (err, req, res) => {
+  console.log(`request ${req.url} failed.`);
+  res.status(500).end();
+});
 
-function dispatcher(req, res, next, options) {
-  return function (rule) {
-    if (rule.from.test(req.path)) {
-      if (rule.to.indexOf('require!') === 0) {
-        // 使用本地文件模拟数据
-        var urlObject = url.parse(req.url);
-        var filepath = urlObject.pathname
-          .replace(rule.from, rule.to)
-          .replace('require!', '');
-        var realpath = path.join(process.cwd(), filepath);
-        if (options.debug) {
-          console.log('[urlrewrite] ' + req.url + ' -> ' + realpath);
-        }
-        res.setHeader('Content-Type', 'application/json');
-        requireUncached(realpath)(req, res);
-      } else if (/^(https{0,1}:){0,1}\/\//.test(rule.to)) {
-        // 使用跨域API模拟数据
-        var toUrl = req.url.replace(rule.from, rule.to);
-        if (options.debug) {
-          console.log('[urlrewrite] ' + req.url + ' -> ' + toUrl);
-        }
-        var targetUrl = url.parse(toUrl);
-        req.url = toUrl;
-        proxy.web(req, res, {
-          target: targetUrl.protocol + '//' + targetUrl.host,
-          changeOrigin: true
-        }, function (e) {
-          // 连接服务器错误
-          res.writeHead(502, { 'Content-Type': 'text/html' });
-          res.end(e.toString());
-        });
-      } else {
-        // 使用同域名的其他API模拟数据
-        var toUrl = req.url.replace(req.path, rule.to);
-        req.url = toUrl;
-        if (options.debug) {
-          console.log('[urlrewrite] ' + req.url + ' -> ' + toUrl);
-        }
-        next();
-      }
-      return true;
-    }
-  };
-};
-
-function convertRules(data) {
-  return Object.keys(data).map(function(from) {
-    return {
-      from: new RegExp(from),
-      to: data[from]
-    };
+module.exports = (app, options = {}) => {
+  Object.assign(options, {
+    mockRoot: '.',
+    useFileMock: process.env.NODE_ENV === 'local'
   });
-}
 
-function rewrite(rewriteTable, options) {
-  var rules = [];
-  var rulesHotFile = rewriteTable.rulesHotFile;
-  options = options || {
-    debug: false
-  };
+  if (process.env.DACE_PROXY) {
+    const requireToken = 'require!';
 
-  if (rulesHotFile) {
-    rules = convertRules(requireUncached(rulesHotFile));
-    fs.watchFile(rulesHotFile, function (curr, prev) {
-      if (options.debug) {
-        console.log('rewriteRules changed.');
-        console.log('reload rewriteRules...');
-      }
-      rules = convertRules(requireUncached(rulesHotFile));
-      if (options.debug) {
-        console.log('reload rewriteRules success.');
-      }
-    });
-  } else {
-    rules = convertRules(rewriteTable);
-  }
-  return function(req, res, next) {
-    if (rules.length === 0 || !rules.some(dispatcher(req, res, next, options))) {
-      next();
+    let rules = {};
+    try {
+      rules = JSON.parse(process.env.DACE_PROXY);
+      console.log('rules:', rules);
+    } catch (e) {
+      throw new Error(`[JSON.parse error] DACE_PROXY is an invalid json. ${e}`);
     }
-  };
-}
 
-module.exports = rewrite;
+    if (Object.keys(rules).length > 0) {
+      Object.keys(rules).forEach((route) => {
+        // console.log('route:', route);
+        app.use(route, (req, res, next) => {
+          console.log('req.baseUrl:', req.baseUrl);
+          // 出于性能的考虑，只有本地开发时才有 mock 数据的功能
+          if (rules[route].startsWith(requireToken) && options.useFileMock) {
+            let filename = rules[route]
+              .replace(requireToken, '')
+              .replace('$0', req.params[0]);
+            if (filename.startsWith('/')) {
+              filename = filename.substring(1, filename.length);
+            }
+            console.log('filename:', filename);
+            const mockJs = path.resolve(options.mockRoot, filename);
+            console.log('mockJs:', mockJs);
+            console.log(fs.existsSync(mockJs));
+            if (fs.existsSync(mockJs)) {
+              require(mockJs)(req, res);
+            } else {
+              next();
+            }
+          } else {
+            proxy.web(req, res, {
+              target: rules[route]
+            });
+          }
+        });
+      });
+    }
+  }
+};

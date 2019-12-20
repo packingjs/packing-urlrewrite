@@ -1,6 +1,6 @@
 # packing-urlrewrite
 
->一个用来做代理和转发URL的express中间件
+>一个用来做代理和转发URL的 express 中间件
 
 [![NPM](https://nodei.co/npm/packing-urlrewrite.png)](https://nodei.co/npm/packing-urlrewrite/)
 
@@ -11,28 +11,22 @@ npm install packing-urlrewrite --save-dev
 
 ## 使用
 
-### 使用静态配置(静态和热加载配置二选一)
-
 ```javascript
 import Express from 'express';
 import urlrewrite from 'packing-urlrewrite';
 
 const rules = {
   // 1.用json模拟数据，标示符为 `require!`
-  '^/api/(.*)': 'require!/mock/api/$1.js',
-  // 2.同域转发
-  '^/$': '/index.html',
-  // 3.跨域转发
-  '^/test/(.*)': 'http://test.xxx.com/test/$1'
+  '^/api/*': 'require!/mock/api/$0.js',
+  // 2.转发
+  '^/test/*': 'http://test.xxx.com/test/$0'
 };
 const app = new Express();
-const options = { debug: true };
 app.use(urlrewrite(rules));
 ```
 
-
 ```javascript
-// /mock/api/$1.js
+// /mock/api/$0.js
 export default (req, res) => {
   // maybe get parameters from request
   const data = {
@@ -43,30 +37,8 @@ export default (req, res) => {
 };
 ```
 
-### 使用热加载配置
-
-```javascript
-import Express from 'express';
-import urlrewrite from 'packing-urlrewrite';
-
-const rules = {
-  // 用热发配置rulesHotFile
-  rulesHotFile: __dirname + '/rewriteRules.js'
-};
-const app = new Express();
-app.use(urlrewrite(rules));
-```
-
-```javascript
-// rewriteRules.js
-module.exports = {
-  // 1.用json模拟数据，标示符为 `require!`
-  '^/api/(.*)': 'require!/mock/api/$1.js',
-  // 2.同域转发
-  '^/$': '/index.html',
-  // 3.跨域转发
-  '^/test/(.*)': 'http://test.xxx.com/test/$1'
-}
-```
 ## 参数
-`debug` - {boolean} 是否输出转发信息，默认值：`false`
+`rules` - {object} 转发规则
+`options` - {object} 可选参数
+`options.mockRoot` - {string} 存放模拟数据的目录在工程中的位置，默认值：`mock`
+`options.useFileMock` - {boolean} 是否启用本地文件模拟数据功能
